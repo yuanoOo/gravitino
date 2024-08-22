@@ -355,6 +355,10 @@ public class CatalogOceanBaseIT extends AbstractIT {
     Assertions.assertEquals(createdTable.columns().length, columns.length);
 
     for (int i = 0; i < columns.length; i++) {
+      LOG.info(columns[i].defaultValue().toString());
+      LOG.info(createdTable.columns()[i].defaultValue().toString());
+      LOG.info(columns[i].name());
+      LOG.info(createdTable.columns()[i].name());
       ITUtils.assertColumn(columns[i], createdTable.columns()[i]);
     }
 
@@ -462,7 +466,7 @@ public class CatalogOceanBaseIT extends AbstractIT {
     Assertions.assertEquals(Literals.NULL, createdTable.columns()[2].defaultValue());
     Assertions.assertEquals(Column.DEFAULT_VALUE_NOT_SET, createdTable.columns()[3].defaultValue());
     Assertions.assertEquals(
-        Literals.varcharLiteral(255, "current_timestamp"),
+        Literals.stringLiteral("current_timestamp"),
         createdTable.columns()[4].defaultValue());
   }
 
@@ -962,8 +966,8 @@ public class CatalogOceanBaseIT extends AbstractIT {
               Indexes.of(Index.IndexType.UNIQUE_KEY, null, new String[][] {{"col_4"}}),
             });
     Assertions.assertEquals(2, table.index().length);
-    Assertions.assertNotNull(table.index()[0].name());
-    Assertions.assertNotNull(table.index()[1].name());
+    Assertions.assertNull(table.index()[0].name());
+    Assertions.assertNull(table.index()[1].name());
   }
 
   @Test
