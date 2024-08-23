@@ -337,35 +337,19 @@ public class CatalogOceanBaseIT extends AbstractIT {
 
     Map<String, String> properties = createProperties();
     TableCatalog tableCatalog = catalog.asTableCatalog();
-    Table createdTable =
-        tableCatalog.createTable(
-            tableIdentifier,
-            columns,
-            table_comment,
-            properties,
-            partitioning,
-            distribution,
-            sortOrders);
-    Assertions.assertEquals(createdTable.name(), tableName);
-    Map<String, String> resultProp = createdTable.properties();
-    for (Map.Entry<String, String> entry : properties.entrySet()) {
-      Assertions.assertTrue(resultProp.containsKey(entry.getKey()));
-      Assertions.assertEquals(entry.getValue(), resultProp.get(entry.getKey()));
-    }
-    Assertions.assertEquals(createdTable.columns().length, columns.length);
-
-    for (int i = 0; i < columns.length; i++) {
-      LOG.info(columns[i].defaultValue().toString());
-      LOG.info(createdTable.columns()[i].defaultValue().toString());
-      LOG.info(columns[i].name());
-      LOG.info(createdTable.columns()[i].name());
-      ITUtils.assertColumn(columns[i], createdTable.columns()[i]);
-    }
+    tableCatalog.createTable(
+        tableIdentifier,
+        columns,
+        table_comment,
+        properties,
+        partitioning,
+        distribution,
+        sortOrders);
 
     Table loadTable = tableCatalog.loadTable(tableIdentifier);
     Assertions.assertEquals(tableName, loadTable.name());
     Assertions.assertEquals(table_comment, loadTable.comment());
-    resultProp = loadTable.properties();
+    Map<String, String> resultProp = loadTable.properties();
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       Assertions.assertTrue(resultProp.containsKey(entry.getKey()));
       Assertions.assertEquals(entry.getValue(), resultProp.get(entry.getKey()));
@@ -421,7 +405,7 @@ public class CatalogOceanBaseIT extends AbstractIT {
             "col_1_comment",
             false,
             false,
-            Literals.integerLiteral(3));
+            FunctionExpression.of("rand"));
     Column col2 =
         Column.of(
             OCEANBASE_COL_NAME2,
@@ -451,22 +435,18 @@ public class CatalogOceanBaseIT extends AbstractIT {
 
     Column[] newColumns = new Column[] {col1, col2, col3, col4, col5};
 
-    Table createdTable =
-        catalog
-            .asTableCatalog()
-            .createTable(
-                NameIdentifier.of(schemaName, GravitinoITUtils.genRandomName("oceanbase_it_table")),
-                newColumns,
-                null,
-                ImmutableMap.of());
-
-    Assertions.assertEquals(Literals.integerLiteral(3), createdTable.columns()[0].defaultValue());
+    NameIdentifier tableIdent =
+        NameIdentifier.of(schemaName, GravitinoITUtils.genRandomName("oceanbase_it_table"));
+    catalog.asTableCatalog().createTable(tableIdent, newColumns, null, ImmutableMap.of());
+    Table createdTable = catalog.asTableCatalog().loadTable(tableIdent);
+    Assertions.assertEquals(
+        UnparsedExpression.of("rand()"), createdTable.columns()[0].defaultValue());
     Assertions.assertEquals(
         DEFAULT_VALUE_OF_CURRENT_TIMESTAMP, createdTable.columns()[1].defaultValue());
     Assertions.assertEquals(Literals.NULL, createdTable.columns()[2].defaultValue());
     Assertions.assertEquals(Column.DEFAULT_VALUE_NOT_SET, createdTable.columns()[3].defaultValue());
     Assertions.assertEquals(
-        Literals.stringLiteral("current_timestamp"),
+        Literals.varcharLiteral(255, "current_timestamp"),
         createdTable.columns()[4].defaultValue());
   }
 
@@ -949,25 +929,25 @@ public class CatalogOceanBaseIT extends AbstractIT {
             illegalArgumentException.getMessage(),
             "Index does not support complex fields in OceanBase"));
 
-    table =
-        tableCatalog.createTable(
-            NameIdentifier.of(schemaName, "test_null_key"),
-            newColumns,
-            table_comment,
-            properties,
-            Transforms.EMPTY_TRANSFORM,
-            Distributions.NONE,
-            new SortOrder[0],
-            new Index[] {
-              Indexes.of(
-                  Index.IndexType.UNIQUE_KEY,
-                  null,
-                  new String[][] {{"col_1"}, {"col_3"}, {"col_4"}}),
-              Indexes.of(Index.IndexType.UNIQUE_KEY, null, new String[][] {{"col_4"}}),
-            });
+    NameIdentifier tableIdent = NameIdentifier.of(schemaName, "test_null_key");
+    tableCatalog.createTable(
+        tableIdent,
+        newColumns,
+        table_comment,
+        properties,
+        Transforms.EMPTY_TRANSFORM,
+        Distributions.NONE,
+        new SortOrder[0],
+        new Index[] {
+          Indexes.of(
+              Index.IndexType.UNIQUE_KEY, null, new String[][] {{"col_1"}, {"col_3"}, {"col_4"}}),
+          Indexes.of(Index.IndexType.UNIQUE_KEY, null, new String[][] {{"col_4"}}),
+        });
+    table = tableCatalog.loadTable(tableIdent);
+
     Assertions.assertEquals(2, table.index().length);
-    Assertions.assertNull(table.index()[0].name());
-    Assertions.assertNull(table.index()[1].name());
+    Assertions.assertNotNull(table.index()[0].name());
+    Assertions.assertNotNull(table.index()[1].name());
   }
 
   @Test
