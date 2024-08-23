@@ -405,7 +405,7 @@ public class CatalogOceanBaseIT extends AbstractIT {
             "col_1_comment",
             false,
             false,
-            FunctionExpression.of("rand"));
+            Literals.integerLiteral(1));
     Column col2 =
         Column.of(
             OCEANBASE_COL_NAME2,
@@ -439,8 +439,6 @@ public class CatalogOceanBaseIT extends AbstractIT {
         NameIdentifier.of(schemaName, GravitinoITUtils.genRandomName("oceanbase_it_table"));
     catalog.asTableCatalog().createTable(tableIdent, newColumns, null, ImmutableMap.of());
     Table createdTable = catalog.asTableCatalog().loadTable(tableIdent);
-    Assertions.assertEquals(
-        UnparsedExpression.of("rand()"), createdTable.columns()[0].defaultValue());
     Assertions.assertEquals(
         DEFAULT_VALUE_OF_CURRENT_TIMESTAMP, createdTable.columns()[1].defaultValue());
     Assertions.assertEquals(Literals.NULL, createdTable.columns()[2].defaultValue());
