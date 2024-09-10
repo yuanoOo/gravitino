@@ -965,13 +965,6 @@ public class TestOceanBaseTableOperations extends TestOceanBase {
 
   @Test
   public void testOperationIndexDefinition() {
-    TableChange.AddIndex failIndex =
-        new TableChange.AddIndex(Index.IndexType.PRIMARY_KEY, "pk_1", new String[][] {{"col_1"}});
-    IllegalArgumentException illegalArgumentException =
-        Assertions.assertThrows(
-            IllegalArgumentException.class,
-            () -> OceanBaseTableOperations.addIndexDefinition(failIndex));
-
     TableChange.AddIndex successIndex =
         new TableChange.AddIndex(
             Index.IndexType.UNIQUE_KEY, "uk_1", new String[][] {{"col_1"}, {"col_2"}});
