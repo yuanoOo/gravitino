@@ -54,6 +54,7 @@ import org.apache.gravitino.rel.TableChange;
 import org.apache.gravitino.rel.expressions.distributions.Distribution;
 import org.apache.gravitino.rel.expressions.transforms.Transform;
 import org.apache.gravitino.rel.indexes.Index;
+import org.apache.gravitino.rel.indexes.Indexes;
 import org.apache.gravitino.rel.types.Types;
 
 /** Table operations for OceanBase. */
@@ -192,11 +193,12 @@ public class OceanBaseTableOperations extends JdbcTableOperations {
       sqlBuilder.append(",\n");
       switch (index.type()) {
         case PRIMARY_KEY:
-          sqlBuilder.append("CONSTRAINT ");
-          if (null != index.name()) {
-            sqlBuilder.append(BACK_QUOTE).append(index.name()).append(BACK_QUOTE);
+          if (null != index.name()
+              && !StringUtils.equalsIgnoreCase(
+                  index.name(), Indexes.DEFAULT_MYSQL_PRIMARY_KEY_NAME)) {
+            throw new IllegalArgumentException("Primary key name must be PRIMARY in OceanBase");
           }
-          sqlBuilder.append(" PRIMARY KEY (").append(fieldStr).append(")");
+          sqlBuilder.append("CONSTRAINT ").append("PRIMARY KEY (").append(fieldStr).append(")");
           break;
         case UNIQUE_KEY:
           sqlBuilder.append("CONSTRAINT ");
@@ -471,11 +473,12 @@ public class OceanBaseTableOperations extends JdbcTableOperations {
     sqlBuilder.append("ADD ");
     switch (addIndex.getType()) {
       case PRIMARY_KEY:
-        sqlBuilder
-            .append("PRIMARY KEY ")
-            .append(BACK_QUOTE)
-            .append(addIndex.getName())
-            .append(BACK_QUOTE);
+        if (null != addIndex.getName()
+            && !StringUtils.equalsIgnoreCase(
+                addIndex.getName(), Indexes.DEFAULT_MYSQL_PRIMARY_KEY_NAME)) {
+          throw new IllegalArgumentException("Primary key name must be PRIMARY in OceanBase");
+        }
+        sqlBuilder.append("PRIMARY KEY ");
         break;
       case UNIQUE_KEY:
         sqlBuilder
