@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-description = "catalog-jdbc-mysql"
+description = "catalog-jdbc-oceanbase"
 
 plugins {
   `maven-publish`
@@ -26,9 +26,6 @@ plugins {
 
 dependencies {
   implementation(project(":api")) {
-    exclude(group = "*")
-  }
-  implementation(project(":catalogs:catalog-common")) {
     exclude(group = "*")
   }
   implementation(project(":catalogs:catalog-jdbc-common")) {
@@ -55,7 +52,9 @@ dependencies {
   testImplementation(libs.junit.jupiter.api)
   testImplementation(libs.junit.jupiter.params)
   testImplementation(libs.mysql.driver)
+  testImplementation(libs.postgresql.driver)
   testImplementation(libs.testcontainers)
+  testImplementation(libs.testcontainers.mysql)
 
   testRuntimeOnly(libs.junit.jupiter.engine)
 }
@@ -65,7 +64,6 @@ tasks {
     from(configurations.runtimeClasspath)
     into("build/libs")
   }
-
   val copyCatalogLibs by registering(Copy::class) {
     dependsOn("jar", "runtimeJars")
     from("build/libs") {
@@ -73,14 +71,14 @@ tasks {
       exclude("log4j-*.jar")
       exclude("slf4j-*.jar")
     }
-    into("$rootDir/distribution/package/catalogs/jdbc-mysql/libs")
+    into("$rootDir/distribution/package/catalogs/jdbc-oceanbase/libs")
   }
 
   val copyCatalogConfig by registering(Copy::class) {
     from("src/main/resources")
-    into("$rootDir/distribution/package/catalogs/jdbc-mysql/conf")
+    into("$rootDir/distribution/package/catalogs/jdbc-oceanbase/conf")
 
-    include("jdbc-mysql.conf")
+    include("jdbc-oceanbase.conf")
 
     exclude { details ->
       details.file.isDirectory()
@@ -100,7 +98,6 @@ tasks.test {
     // Only run integration tests
     include("**/integration/**")
   }
-
   val skipITs = project.hasProperty("skipITs")
   if (skipITs) {
     // Exclude integration tests
