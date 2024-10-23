@@ -493,6 +493,11 @@ public class DorisTableOperations extends JdbcTableOperations {
   }
 
   @Override
+  protected String generateRenameTableSql(String oldTableName, String newTableName) {
+    return String.format("ALTER TABLE `%s` RENAME `%s`", oldTableName, newTableName);
+  }
+
+  @Override
   protected String generatePurgeTableSql(String tableName) {
     throw new UnsupportedOperationException(
         "Doris does not support purge table in Gravitino, please use drop table");
