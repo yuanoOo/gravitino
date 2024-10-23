@@ -84,11 +84,6 @@ public class OceanBaseTableOperations extends JdbcTableOperations {
   }
 
   @Override
-  public JdbcTable load(String databaseName, String tableName) throws NoSuchTableException {
-    return super.load(databaseName, tableName.toLowerCase());
-  }
-
-  @Override
   protected String generateCreateTableSql(
       String tableName,
       JdbcColumn[] columns,
@@ -140,7 +135,7 @@ public class OceanBaseTableOperations extends JdbcTableOperations {
               .collect(Collectors.joining(",\n", "\n", "")));
     }
 
-    // TODO: Add partition info if necessary.
+    // TODO: Add partition info.
 
     // Return the generated SQL statement
     String result = sqlBuilder.append(";").toString();
@@ -266,16 +261,6 @@ public class OceanBaseTableOperations extends JdbcTableOperations {
       tableBuilder.withComment(
           tableBuilder.properties().getOrDefault(COMMENT, tableBuilder.comment()));
     }
-  }
-
-  @Override
-  protected String generateRenameTableSql(String oldTableName, String newTableName) {
-    return String.format("RENAME TABLE `%s` TO `%s`", oldTableName, newTableName);
-  }
-
-  @Override
-  protected String generateDropTableSql(String tableName) {
-    return String.format("DROP TABLE `%s`", tableName);
   }
 
   @Override
@@ -499,12 +484,6 @@ public class OceanBaseTableOperations extends JdbcTableOperations {
             setProperty ->
                 String.format("%s = %s", setProperty.getProperty(), setProperty.getValue()))
         .collect(Collectors.joining(",\n"));
-  }
-
-  @Override
-  protected JdbcTable getOrCreateTable(
-      String databaseName, String tableName, JdbcTable lazyLoadCreateTable) {
-    return null != lazyLoadCreateTable ? lazyLoadCreateTable : load(databaseName, tableName);
   }
 
   private String updateColumnCommentFieldDefinition(
